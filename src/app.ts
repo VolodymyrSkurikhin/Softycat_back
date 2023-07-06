@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 
-import { router as catRouter } from "./routes/api/cats.ts";
+import { router as catRouter } from "./routes/api/cats.js";
 
 export const app = express();
 
