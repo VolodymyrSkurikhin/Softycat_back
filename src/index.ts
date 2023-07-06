@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { app } from "./app.js";
+import { app } from "./app.ts";
 
 console.log("test");
 
