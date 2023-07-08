@@ -29,3 +29,7 @@ mongoose
     console.log(error.message);
     process.exit(1);
   });
+
+const error = new Error();
+
+console.log(error);
