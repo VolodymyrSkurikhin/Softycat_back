@@ -28,11 +28,15 @@ const catSchema = new Schema<ICat>(
   { versionKey: false, timestamps: true }
 );
 
-export const joiCatSchema = Joi.object({
+export const joiAddCatSchema = Joi.object({
   name: Joi.string().required(),
   birthday: Joi.string().pattern(dateRegexp).required(),
   breed: Joi.string(),
   forSale: Joi.boolean(),
+});
+
+export const joiCatForSaleSchema = Joi.object({
+  forSale: Joi.boolean().required(),
 });
 
 catSchema.post("save", handleMongooseError);
