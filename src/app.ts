@@ -3,6 +3,7 @@ import cors from "cors";
 import logger from "morgan";
 
 import { router as catRouter } from "./routes/api/cats.js";
+import { router as authRouter } from "./routes/api/auth.js";
 
 export const app = express();
 
@@ -10,6 +11,7 @@ app.use(logger("dev"));
 app.use(cors());
 app.use(express.json());
 
+app.use("/api/auth", authRouter);
 app.use("/api/cats", catRouter);
 
 app.use((_req, res) => {
