@@ -4,7 +4,12 @@ import { User } from "../models/user.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
 
-const { SECRET_KEY } = process.env;
+let secret_key: string;
+if (process.env.SECRET_KEY) {
+  secret_key = process.env.SECRET_KEY;
+} else {
+  throw new Error("SECRET_KEY is not set");
+}
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -31,7 +36,7 @@ const login = async (req, res) => {
     throw HttpError(401, "Email or password is not valid");
   }
   const payload = { id: user._id };
-  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
+  const token = jwt.sign(payload, secret_key, { expiresIn: "23h" });
   res.json({ token });
 };
 
