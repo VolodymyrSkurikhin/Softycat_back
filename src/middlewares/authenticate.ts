@@ -24,10 +24,11 @@ export const authenticate = async (req, _res, next) => {
     const { id } = jwt.verify(token, secret_key) as JwtPayload;
     const user = await User.findById(id);
     if (!user) {
-      next(HttpError(401, "Not authoriz"));
+      next(HttpError(401));
     }
+    req.user = user;
     next();
   } catch {
-    next(HttpError(401, "Not authorized"));
+    next(HttpError(401));
   }
 };

@@ -2,8 +2,14 @@ import { Cat } from "../models/cat.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
 
-const getAll = async (_, res) => {
-  const result = await Cat.find({}, "-createdAt -updatedAt");
+const getAll = async (req, res) => {
+  const { _id: owner } = req.user;
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+  const result = await Cat.find({ owner }, "-createdAt -updatedAt", {
+    skip,
+    limit,
+  }).populate("owner", "name email");
   res.json(result);
 };
 
@@ -17,7 +23,8 @@ const getById = async (req, res) => {
 };
 
 const add = async (req, res) => {
-  const result = await Cat.create(req.body);
+  const { _id: owner } = req.user;
+  const result = await Cat.create({ ...req.body, owner });
   res.status(201).json(result);
 };
 

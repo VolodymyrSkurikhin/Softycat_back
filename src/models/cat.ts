@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 import Joi from "joi";
 import { handleMongooseError } from "../helpers/handleMongooseError.js";
 
@@ -10,6 +10,7 @@ interface ICat {
   birthday: string;
   breed?: string;
   forSale?: boolean;
+  owner: Types.ObjectId;
 }
 
 const catSchema = new Schema<ICat>(
@@ -24,6 +25,7 @@ const catSchema = new Schema<ICat>(
       type: Boolean,
       default: false,
     },
+    owner: { type: Schema.Types.ObjectId, ref: "user", required: true },
   },
   { versionKey: false, timestamps: true }
 );
