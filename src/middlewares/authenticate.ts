@@ -23,7 +23,7 @@ export const authenticate = async (req, _res, next) => {
   try {
     const { id } = jwt.verify(token, secret_key) as JwtPayload;
     const user = await User.findById(id);
-    if (!user) {
+    if (!user || !user.token || user.token !== token) {
       next(HttpError(401));
     }
     req.user = user;

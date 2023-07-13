@@ -9,6 +9,7 @@ interface IUser {
   name: string;
   email: string;
   password: string;
+  token: string;
 }
 
 const userSchema = new Schema<IUser>(
@@ -16,6 +17,7 @@ const userSchema = new Schema<IUser>(
     name: { type: String, required: true },
     email: { type: String, required: true, match: emailRegexp, unique: true },
     password: { type: String, required: true, minlength: 6 },
+    token: { type: String, default: "" },
   },
   { versionKey: false, timestamps: true }
 );
