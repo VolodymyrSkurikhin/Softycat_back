@@ -1,5 +1,6 @@
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
 import { User } from "../models/user.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
@@ -18,7 +19,12 @@ const register = async (req, res) => {
     throw HttpError(409, "Email is already in use");
   }
   const hashedPassword = await bcryptjs.hash(password, 10);
-  const newUser = await User.create({ ...req.body, password: hashedPassword });
+  const avatarURL = gravatar.url(email);
+  const newUser = await User.create({
+    ...req.body,
+    password: hashedPassword,
+    avatarURL,
+  });
   res.status(201).json({
     name: newUser.name,
     email: newUser.email,

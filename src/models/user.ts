@@ -10,6 +10,7 @@ interface IUser {
   email: string;
   password: string;
   token: string;
+  avatarURL: string;
 }
 
 const userSchema = new Schema<IUser>(
@@ -18,6 +19,7 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, match: emailRegexp, unique: true },
     password: { type: String, required: true, minlength: 6 },
     token: { type: String, default: "" },
+    avatarURL: { type: String, required: true },
   },
   { versionKey: false, timestamps: true }
 );
