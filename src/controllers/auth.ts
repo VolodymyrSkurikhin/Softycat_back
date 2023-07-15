@@ -1,9 +1,29 @@
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { User } from "../models/user.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
+
+const region = "eu-central-1";
+const client = new S3Client({ region });
+const bucket = "softycatbucket";
+
+export const uploadToS3 = async (key: string, body: string) => {
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    Body: body,
+  });
+
+  try {
+    const response = await client.send(command);
+    console.log(response);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 let secret_key: string;
 if (process.env.SECRET_KEY) {
@@ -58,9 +78,20 @@ const logout = async (req, res) => {
   res.json({ message: "Success logout" });
 };
 
+const updateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { originalname, buffer } = req.file;
+  const fileName = `${_id}_${originalname}`;
+  await uploadToS3(fileName, buffer);
+  const avatarURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
+  await User.findByIdAndUpdate(_id, { avatarURL });
+  res.json({ avatarURL });
+};
+
 export default {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
+  updateAvatar: ctrlWrapper(updateAvatar),
 };

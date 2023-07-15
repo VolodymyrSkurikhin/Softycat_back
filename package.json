@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/VolodymyrSkurikhin/Softycat_back#readme",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.370.0",
     "@types/morgan": "^1.9.4",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
