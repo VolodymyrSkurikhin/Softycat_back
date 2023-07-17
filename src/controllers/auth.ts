@@ -1,29 +1,27 @@
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+// import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { User } from "../models/user.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
+import { uploadToS3, region, bucket } from "../helpers/uploadToS3.js";
 
-const region = "eu-central-1";
-const client = new S3Client({ region });
-const bucket = "softycatbucket";
+// const region = "eu-central-1";
+// const client = new S3Client({ region });
+// const bucket = "softycatbucket";
 
-export const uploadToS3 = async (key: string, body: string) => {
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: key,
-    Body: body,
-  });
+// export const uploadToS3 = async (key: string, body: string) => {
+//   const command = new PutObjectCommand({
+//     Bucket: bucket,
+//     Key: key,
+//     Body: body,
+//   });
 
-  try {
-    const response = await client.send(command);
-    console.log(response);
-  } catch (err) {
-    console.error(err);
-  }
-};
+//   const response = await client.send(command);
+
+//   console.log(response);
+// };
 
 let secret_key: string;
 if (process.env.SECRET_KEY) {
@@ -80,7 +78,11 @@ const logout = async (req, res) => {
 
 const updateAvatar = async (req, res) => {
   const { _id } = req.user;
-  const { originalname, buffer } = req.file;
+  const { originalname, buffer, size } = req.file;
+  console.log(req.file);
+  if (size > 10000000) {
+    throw HttpError(400, "Avatar must be less than 10Megabytes");
+  }
   const fileName = `${_id}_${originalname}`;
   await uploadToS3(fileName, buffer);
   const avatarURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
