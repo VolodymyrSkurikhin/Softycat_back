@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { Cat } from "../models/cat.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
@@ -27,9 +28,10 @@ const add = async (req, res) => {
   const { _id: owner } = req.user;
   const { size, originalname, buffer } = req.file;
   if (size > 10000000) {
-    throw HttpError(400, "Avatar must be less than 10Megabytes");
+    throw HttpError(400, "Photo of cat must be less than 10Megabytes");
   }
-  const fileName = `${owner}_${originalname}`;
+  const id = nanoid();
+  const fileName = `${id}_${originalname}`;
   await uploadToS3(fileName, buffer);
   const catImageURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
   const result = await Cat.create({ ...req.body, owner, catImageURL });
