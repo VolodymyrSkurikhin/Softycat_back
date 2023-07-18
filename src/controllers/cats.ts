@@ -1,6 +1,7 @@
 import { Cat } from "../models/cat.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
+import { uploadToS3, region, bucket } from "../helpers/uploadToS3.js";
 
 const getAll = async (req, res) => {
   const { _id: owner } = req.user;
@@ -24,7 +25,14 @@ const getById = async (req, res) => {
 
 const add = async (req, res) => {
   const { _id: owner } = req.user;
-  const result = await Cat.create({ ...req.body, owner });
+  const { size, originalname, buffer } = req.file;
+  if (size > 10000000) {
+    throw HttpError(400, "Avatar must be less than 10Megabytes");
+  }
+  const fileName = `${owner}_${originalname}`;
+  await uploadToS3(fileName, buffer);
+  const catImageURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
+  const result = await Cat.create({ ...req.body, owner, catImageURL });
   res.status(201).json(result);
 };
 

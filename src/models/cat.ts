@@ -11,6 +11,7 @@ interface ICat {
   breed?: string;
   forSale?: boolean;
   owner: Types.ObjectId;
+  catImageURL?: string;
 }
 
 const catSchema = new Schema<ICat>(
@@ -26,6 +27,7 @@ const catSchema = new Schema<ICat>(
       default: false,
     },
     owner: { type: Schema.Types.ObjectId, ref: "user", required: true },
+    catImageURL: { type: String },
   },
   { versionKey: false, timestamps: true }
 );

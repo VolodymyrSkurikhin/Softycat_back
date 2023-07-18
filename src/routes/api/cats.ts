@@ -5,6 +5,7 @@ import { joiAddCatSchema, joiCatForSaleSchema } from "../../models/cat.js";
 import catCtrl from "../../controllers/cats.js";
 import { isValidId } from "../../middlewares/isValidId.js";
 import { authenticate } from "../../middlewares/authenticate.js";
+import { upload } from "../../middlewares/upload.js";
 
 export const router = express.Router();
 
@@ -12,7 +13,13 @@ router.get("/", authenticate, catCtrl.getAll);
 
 router.get("/:id", authenticate, isValidId, catCtrl.getById);
 
-router.post("/", authenticate, joiValidateBody(joiAddCatSchema), catCtrl.add);
+router.post(
+  "/",
+  authenticate,
+  joiValidateBody(joiAddCatSchema),
+  upload.single("image"),
+  catCtrl.add
+);
 
 router.put(
   "/:id",
