@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import { Cat } from "../models/cat.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
-import { uploadToS3, region, bucket } from "../helpers/uploadToS3.js";
+import { uploadToS3 } from "../helpers/uploadToS3.js";
 
 const getAll = async (req, res) => {
   const { _id: owner } = req.user;
@@ -26,14 +26,15 @@ const getById = async (req, res) => {
 
 const add = async (req, res) => {
   const { _id: owner } = req.user;
-  const { size, originalname, buffer } = req.file;
+  const { size, buffer } = req.file;
   if (size > 10000000) {
     throw HttpError(400, "Photo of cat must be less than 10Megabytes");
   }
-  const id = nanoid();
-  const fileName = `${id}_${originalname}`;
-  await uploadToS3(fileName, buffer);
-  const catImageURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
+  const photoId = nanoid();
+  // const fileName = `${id}_${originalname}`;
+  await uploadToS3(photoId, buffer);
+  // const catImageURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
+  const catImageURL = [photoId];
   const result = await Cat.create({ ...req.body, owner, catImageURL });
   res.status(201).json(result);
 };
@@ -56,6 +57,41 @@ const updateForSale = async (req, res) => {
   res.json(result);
 };
 
+const updateCatImage = async (req, res) => {
+  const { id } = req.params;
+  if (!req.file) {
+    throw HttpError(400, "No photo included");
+  }
+  const { size = 0, buffer } = req.file;
+  if (size > 10000000) {
+    throw HttpError(400, "Photo of cat must be less than 10Megabytes");
+  }
+  if (size === 0) {
+    throw HttpError(400, "No photo included");
+  }
+  const result = await Cat.findById(id);
+  if (!result) {
+    throw HttpError(404, "Not found");
+  }
+  const { catImageURL } = result;
+  if (!catImageURL) {
+    throw HttpError(404, "Not found");
+  }
+  const photoId = nanoid();
+  await uploadToS3(photoId, buffer);
+  // catImageURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
+  catImageURL.push(photoId);
+  const newResult = await Cat.findByIdAndUpdate(
+    id,
+    { catImageURL },
+    { new: true }
+  );
+  if (!newResult) {
+    throw HttpError(404, "Not found");
+  }
+  res.json(newResult);
+};
+
 const deleteById = async (req, res) => {
   const { id } = req.params;
   const result = await Cat.findByIdAndRemove(id);
@@ -72,4 +108,5 @@ export default {
   updateById: ctrlWrapper(updateById),
   updateForSale: ctrlWrapper(updateForSale),
   deleteById: ctrlWrapper(deleteById),
+  updateCatImage: ctrlWrapper(updateCatImage),
 };

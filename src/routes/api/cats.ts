@@ -26,6 +26,7 @@ router.put(
   authenticate,
   isValidId,
   joiValidateBody(joiAddCatSchema),
+  upload.single("image"),
   catCtrl.updateById
 );
 
@@ -35,6 +36,14 @@ router.patch(
   isValidId,
   joiValidateBody(joiCatForSaleSchema),
   catCtrl.updateForSale
+);
+
+router.patch(
+  "/:id/catImage",
+  authenticate,
+  isValidId,
+  upload.single("image"),
+  catCtrl.updateCatImage
 );
 
 router.delete("/:id", authenticate, isValidId, catCtrl.deleteById);
