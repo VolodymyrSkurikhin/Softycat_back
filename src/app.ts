@@ -15,7 +15,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/cats", catRouter);
 
 app.use((_req, res) => {
-  res.status(404).json({ messge: "Not found" });
+  res.status(404).json({ message: "Not found" });
 });
 
 app.use((err, _req, res, _next) => {
