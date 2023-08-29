@@ -17,3 +17,4 @@ router.patch(
   upload.single("avatar"),
   userCtrl.updateAvatar
 );
+router.patch("/isshown", authenticate, userCtrl.updateIsShown);

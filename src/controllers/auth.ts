@@ -46,6 +46,7 @@ const register = async (req, res) => {
   res.status(201).json({
     name: newUser.name,
     email: newUser.email,
+    avatarURL: newUser.avatarURL,
   });
 };
 
@@ -89,6 +90,12 @@ const updateAvatar = async (req, res) => {
   await User.findByIdAndUpdate(_id, { avatarURL });
   res.json({ avatarURL });
 };
+const updateIsShown = async (req, res) => {
+  const { _id } = req.user;
+  const { isShown } = req.body;
+  await User.findByIdAndUpdate(_id, { isShown });
+  res.json({ isShown });
+};
 
 export default {
   register: ctrlWrapper(register),
@@ -96,4 +103,5 @@ export default {
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
   updateAvatar: ctrlWrapper(updateAvatar),
+  updateIsShown: ctrlWrapper(updateIsShown),
 };

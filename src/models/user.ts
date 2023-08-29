@@ -11,6 +11,7 @@ interface IUser {
   password: string;
   token: string;
   avatarURL: string;
+  isShown: boolean;
 }
 
 const userSchema = new Schema<IUser>(
@@ -20,6 +21,7 @@ const userSchema = new Schema<IUser>(
     password: { type: String, required: true, minlength: 6 },
     token: { type: String, default: "" },
     avatarURL: { type: String, required: true },
+    isShown: { type: Boolean, default: false },
   },
   { versionKey: false, timestamps: true }
 );
