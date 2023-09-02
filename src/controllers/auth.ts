@@ -74,10 +74,10 @@ const login = async (req, res) => {
 const getAllUsers = async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
-  const result = await User.find({}, "-createdAt -updatedAt", {
+  const result = await User.find({}, "-createdAt -updatedAt -password", {
     skip,
     limit,
-  }).populate("owner", "name email");
+  });
   res.json(result);
 };
 
