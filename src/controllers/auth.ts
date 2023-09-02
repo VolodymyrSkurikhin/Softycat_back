@@ -63,7 +63,22 @@ const login = async (req, res) => {
   const payload = { id: user._id };
   const token = jwt.sign(payload, secret_key, { expiresIn: "23h" });
   await User.findByIdAndUpdate(user._id, { token });
-  res.json({ name: user.name, token });
+  res.json({
+    name: user.name,
+    email: user.email,
+    avatarURL: user.avatarURL,
+    token,
+  });
+};
+
+const getAllUsers = async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+  const result = await User.find({}, "-createdAt -updatedAt", {
+    skip,
+    limit,
+  }).populate("owner", "name email");
+  res.json(result);
 };
 
 const getCurrent = async (req, res) => {
@@ -91,10 +106,13 @@ const updateAvatar = async (req, res) => {
   res.json({ avatarURL });
 };
 const updateIsShown = async (req, res) => {
-  const { _id } = req.user;
-  const { isShown } = req.body;
-  await User.findByIdAndUpdate(_id, { isShown });
-  res.json({ isShown });
+  const { isShown, _id } = req.user;
+  const newUser = await User.findByIdAndUpdate(
+    _id,
+    { isShown: !isShown },
+    { returnDocument: "after" }
+  );
+  res.json(newUser);
 };
 
 export default {
@@ -104,4 +122,5 @@ export default {
   logout: ctrlWrapper(logout),
   updateAvatar: ctrlWrapper(updateAvatar),
   updateIsShown: ctrlWrapper(updateIsShown),
+  getAllUsers: ctrlWrapper(getAllUsers),
 };

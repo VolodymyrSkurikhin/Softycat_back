@@ -16,11 +16,11 @@ if (process.env.SECRET_KEY) {
 
 export const authenticate = async (req, _res, next) => {
   const { authorization = "" } = req.headers;
-  // const [bearer, token] = authorization.split(" ");
-  // if (bearer !== "Bearer") {
-  //   next(HttpError(401, "No bearer"));
-  // }
-  const token = authorization;
+  const [bearer, token] = authorization.split(" ");
+  if (bearer !== "Bearer") {
+    next(HttpError(401, "No bearer"));
+  }
+  // const token = authorization;
   try {
     const { id } = jwt.verify(token, secret_key) as JwtPayload;
     const user = await User.findById(id);
