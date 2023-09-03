@@ -67,6 +67,7 @@ const login = async (req, res) => {
     name: user.name,
     email: user.email,
     avatarURL: user.avatarURL,
+    isShown: user.isShown,
     token,
   });
 };
@@ -112,7 +113,7 @@ const updateIsShown = async (req, res) => {
     { isShown: !isShown },
     { returnDocument: "after" }
   );
-  res.json(newUser);
+  res.json(newUser?.isShown);
 };
 
 export default {

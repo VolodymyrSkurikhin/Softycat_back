@@ -6,7 +6,7 @@ import { handleMongooseError } from "../helpers/handleMongooseError.js";
 const emailRegexp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 interface IUser {
-  _id: string;
+  // _id: string;
   name: string;
   email: string;
   password: string;
@@ -17,7 +17,7 @@ interface IUser {
 
 const userSchema = new Schema<IUser>(
   {
-    _id: String,
+    // _id: String,
     name: { type: String, required: true },
     email: { type: String, required: true, match: emailRegexp, unique: true },
     password: { type: String, required: true, minlength: 6 },
