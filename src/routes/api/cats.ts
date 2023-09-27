@@ -9,7 +9,7 @@ import { upload } from "../../middlewares/upload.js";
 
 export const router = express.Router();
 
-router.get("/", authenticate, catCtrl.getAll);
+router.get("/:ownerId", catCtrl.getAll);
 
 router.get("/:id", authenticate, isValidId, catCtrl.getById);
 

@@ -4,8 +4,11 @@ import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
 import { uploadToS3 } from "../helpers/uploadToS3.js";
 
+const S3URL = "https://softycatbucket.s3.eu-central-1.amazonaws.com/";
+
 const getAll = async (req, res) => {
-  const { _id: owner } = req.user;
+  // const { _id: owner } = req.user;
+  const { ownerId: owner } = req.params;
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
   const result = await Cat.find({ owner }, "-createdAt -updatedAt", {
@@ -34,7 +37,8 @@ const add = async (req, res) => {
   // const fileName = `${id}_${originalname}`;
   await uploadToS3(photoId, buffer);
   // const catImageURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
-  const catImageURL = [photoId];
+  // const catImageURL = [photoId];
+  const catImageURL = `${S3URL}${photoId}`;
   const result = await Cat.create({ ...req.body, owner, catImageURL });
   res.status(201).json(result);
 };
