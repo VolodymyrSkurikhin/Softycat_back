@@ -17,7 +17,7 @@ router.post(
   "/",
   authenticate,
   joiValidateBody(joiAddCatSchema),
-  upload.single("image"),
+  upload.single("photo"),
   catCtrl.add
 );
 
