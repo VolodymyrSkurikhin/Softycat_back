@@ -77,14 +77,15 @@ const updateCatImage = async (req, res) => {
   if (!result) {
     throw HttpError(404, "Not found");
   }
-  const { catImageURL } = result;
+  let { catImageURL } = result;
   if (!catImageURL) {
     throw HttpError(404, "Not found");
   }
   const photoId = nanoid();
   await uploadToS3(photoId, buffer);
   // catImageURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
-  catImageURL.push(photoId);
+  // catImageURL.push(photoId);
+  catImageURL = `${S3URL}${photoId}`;
   const newResult = await Cat.findByIdAndUpdate(
     id,
     { catImageURL },

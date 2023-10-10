@@ -1,5 +1,5 @@
 import { Schema, Types, model } from "mongoose";
-import Joi from "joi";
+import Joi, { string } from "joi";
 import { handleMongooseError } from "../helpers/handleMongooseError.js";
 
 const dateRegexp = /^\d{2}-\d{2}-\d{4}$/;
@@ -11,7 +11,7 @@ interface ICat {
   breed?: string;
   forSale?: boolean;
   owner: Types.ObjectId;
-  catImageURL: string[];
+  catImageURL: string;
 }
 
 const catSchema = new Schema<ICat>(
@@ -27,7 +27,7 @@ const catSchema = new Schema<ICat>(
       default: false,
     },
     owner: { type: Schema.Types.ObjectId, ref: "user", required: true },
-    catImageURL: { type: [String], required: true },
+    catImageURL: { type: String, required: true },
   },
   { versionKey: false, timestamps: true }
 );
