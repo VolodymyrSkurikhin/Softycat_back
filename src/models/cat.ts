@@ -1,5 +1,5 @@
 import { Schema, Types, model } from "mongoose";
-import Joi, { string } from "joi";
+import Joi from "joi";
 import { handleMongooseError } from "../helpers/handleMongooseError.js";
 
 const dateRegexp = /^\d{2}-\d{2}-\d{4}$/;

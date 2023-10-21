@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import { Cat } from "../models/cat.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
-import { uploadToS3 } from "../helpers/uploadToS3.js";
+import { uploadToS3, deleteFromS3 } from "../helpers/uploadToS3.js";
 
 const S3URL = "https://softycatbucket.s3.eu-central-1.amazonaws.com/";
 
@@ -99,11 +99,23 @@ const updateCatImage = async (req, res) => {
 
 const deleteById = async (req, res) => {
   const { id } = req.params;
+  const resObj = await Cat.findById(id);
+  if (!resObj) {
+    throw HttpError(404, "Not found");
+  }
+  const imgDeleteResult = await deleteFromS3(resObj.catImageURL);
+  if (!imgDeleteResult) {
+    throw HttpError(500, "Server error");
+  }
+  if (imgDeleteResult.$metadata.httpStatusCode !== 204) {
+    res.json({ message: "Something went wrong,try later, please!" });
+    return;
+  }
   const result = await Cat.findByIdAndRemove(id);
   if (!result) {
     throw HttpError(404, "Not found");
   }
-  res.json({ message: "Successfully removed" });
+  res.json({ message: "Successfully removed", S3: imgDeleteResult });
 };
 
 export default {
