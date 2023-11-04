@@ -99,9 +99,13 @@ const updateCatImage = async (req, res) => {
 
 const deleteById = async (req, res) => {
   const { id } = req.params;
+  const ownerID = req.user._id;
   const resObj = await Cat.findById(id);
   if (!resObj) {
     throw HttpError(404, "Not found");
+  }
+  if (resObj.owner !== ownerID) {
+    throw HttpError(403, "Forbidden");
   }
   const imgDeleteResult = await deleteFromS3(resObj.catImageURL);
   if (!imgDeleteResult) {

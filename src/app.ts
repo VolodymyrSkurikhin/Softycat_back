@@ -4,6 +4,7 @@ import logger from "morgan";
 
 import { router as catRouter } from "./routes/api/cats.js";
 import { router as authRouter } from "./routes/api/auth.js";
+import { router as catImageRouter } from "./routes/api/image.js";
 
 export const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRouter);
 app.use("/api/cats", catRouter);
+app.use("/api/image", catImageRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ message: "Not found" });
