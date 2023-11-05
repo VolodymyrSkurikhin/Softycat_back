@@ -69,7 +69,7 @@ const login = async (req, res) => {
     avatarURL: user.avatarURL,
     isShown: user.isShown,
     token,
-    id: user._id,
+    _id: user._id,
   });
 };
 
