@@ -16,3 +16,5 @@ router.post(
   upload.single("photo"),
   catImageCtrl.addImage
 );
+
+router.get("/:sentCatID", catImageCtrl.getAll);

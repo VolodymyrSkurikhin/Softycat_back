@@ -37,4 +37,15 @@ const addImage = async (req, res) => {
   res.status(201).json(result);
 };
 
-export default { addImage: ctrlWrapper(addImage) };
+const getAll = async (req, res) => {
+  const { sentCatID:cat } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+  const result = await Image.find({ cat }, "-createdAt -updatedAt", {
+    skip,
+    limit,
+  });
+  res.json(result);
+};
+
+export default { addImage: ctrlWrapper(addImage),getAll:ctrlWrapper(getAll) };
