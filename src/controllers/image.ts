@@ -38,14 +38,14 @@ const addImage = async (req, res) => {
 };
 
 const getAll = async (req, res) => {
-  const { sentCatID:cat } = req.params;
+  const { sentCatID: cat } = req.params;
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
   const result = await Image.find({ cat }, "-createdAt -updatedAt", {
     skip,
     limit,
-  });
+  }).populate("cat", "name");
   res.json(result);
 };
 
-export default { addImage: ctrlWrapper(addImage),getAll:ctrlWrapper(getAll) };
+export default { addImage: ctrlWrapper(addImage), getAll: ctrlWrapper(getAll) };
