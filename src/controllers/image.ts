@@ -39,6 +39,7 @@ const addImage = async (req, res) => {
 
 const getAll = async (req, res) => {
   const { sentCatID: cat } = req.params;
+  console.log(cat);
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
   const result = await Image.find({ cat }, "-createdAt -updatedAt", {
