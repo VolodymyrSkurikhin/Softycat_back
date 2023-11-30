@@ -56,7 +56,7 @@ const deleteById = async (req, res) => {
   if (!resObj) {
     throw HttpError(404, "Not found");
   }
-  if (resObj.owner !== ownerID) {
+  if (!resObj.owner.equals(ownerID)) {
     throw HttpError(403, "Forbidden");
   }
   const imgDeleteResult = await deleteFromS3(resObj.catDetailedImageURL);

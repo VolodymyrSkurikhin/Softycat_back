@@ -15,7 +15,7 @@ router.post("/logout", authenticate, userCtrl.logout);
 router.patch(
   "/avatar",
   authenticate,
-  upload.single("avatar"),
+  upload.single("photo"),
   userCtrl.updateAvatar
 );
 router.patch("/isshown", authenticate, userCtrl.updateIsShown);

@@ -1,11 +1,17 @@
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
+import { nanoid } from "nanoid";
 // import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { User } from "../models/user.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
-import { uploadToS3, region, bucket } from "../helpers/uploadToS3.js";
+import {
+  uploadToS3,
+  region,
+  bucket,
+  deleteFromS3,
+} from "../helpers/uploadToS3.js";
 
 // const region = "eu-central-1";
 // const client = new S3Client({ region });
@@ -95,17 +101,23 @@ const logout = async (req, res) => {
 };
 
 const updateAvatar = async (req, res) => {
-  const { _id } = req.user;
-  const { originalname, buffer, size } = req.file;
+  const { _id, avatarURL: oldAvatarURL } = req.user;
+  // const { originalname, buffer, size } = req.file;
+  const { buffer, size } = req.file;
   console.log(req.file);
   if (size > 10000000) {
     throw HttpError(400, "Avatar must be less than 10Megabytes");
   }
-  const fileName = `${_id}_${originalname}`;
+  const fileName = `${_id}_${nanoid()}`;
+  // const fileName = `${_id}`;
   await uploadToS3(fileName, buffer);
   const avatarURL = `https://${bucket}.s3.${region}.amazonaws.com/${fileName}`;
   await User.findByIdAndUpdate(_id, { avatarURL });
-  res.json({ avatarURL });
+  if (oldAvatarURL.includes("amazonaws")) {
+    const oldFilename = oldAvatarURL.split("amazonaws.com/")[1];
+    await deleteFromS3(oldFilename);
+  }
+  res.json(avatarURL);
 };
 const updateIsShown = async (req, res) => {
   const { isShown, _id } = req.user;
