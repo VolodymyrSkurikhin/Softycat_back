@@ -119,14 +119,23 @@ const updateAvatar = async (req, res) => {
   }
   res.json(avatarURL);
 };
+const updateName = async (req, res) => {
+  const { _id } = req.user;
+  const updatedUser = await User.findByIdAndUpdate(
+    _id,
+    { name: req.body.name },
+    { returnDocument: "after" }
+  );
+  res.json(updatedUser?.name);
+};
 const updateIsShown = async (req, res) => {
   const { isShown, _id } = req.user;
-  const newUser = await User.findByIdAndUpdate(
+  const updatedUser = await User.findByIdAndUpdate(
     _id,
     { isShown: !isShown },
     { returnDocument: "after" }
   );
-  res.json(newUser?.isShown);
+  res.json(updatedUser?.isShown);
 };
 
 export default {
@@ -134,6 +143,7 @@ export default {
   login: ctrlWrapper(login),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
+  updateName: ctrlWrapper(updateName),
   updateAvatar: ctrlWrapper(updateAvatar),
   updateIsShown: ctrlWrapper(updateIsShown),
   getAllUsers: ctrlWrapper(getAllUsers),
