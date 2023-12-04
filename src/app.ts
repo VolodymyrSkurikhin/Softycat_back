@@ -11,6 +11,7 @@ export const app = express();
 app.use(logger("dev"));
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded());
 
 app.use("/api/auth", authRouter);
 app.use("/api/cats", catRouter);

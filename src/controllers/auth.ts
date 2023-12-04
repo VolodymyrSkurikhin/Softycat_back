@@ -121,9 +121,12 @@ const updateAvatar = async (req, res) => {
 };
 const updateName = async (req, res) => {
   const { _id } = req.user;
+  const { name } = req.body;
+  console.log("reqbody", req.body);
+  console.log("name from reqbody", name);
   const updatedUser = await User.findByIdAndUpdate(
     _id,
-    { name: req.body.name },
+    { name },
     { returnDocument: "after" }
   );
   res.json(updatedUser?.name);
