@@ -13,6 +13,7 @@ router.get("/current", authenticate, userCtrl.getCurrent);
 router.get("/allusers", userCtrl.getAllUsers);
 router.post("/logout", authenticate, userCtrl.logout);
 router.patch("/name", authenticate, userCtrl.updateName);
+router.patch("/email", authenticate, userCtrl.updateEmail);
 router.patch(
   "/avatar",
   authenticate,

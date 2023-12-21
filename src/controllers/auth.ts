@@ -131,6 +131,18 @@ const updateName = async (req, res) => {
   );
   res.json(updatedUser?.name);
 };
+const updateEmail = async (req, res) => {
+  const { _id } = req.user;
+  const { email } = req.body;
+  console.log("reqbody", req.body);
+  console.log("email from reqbody", email);
+  const updatedUser = await User.findByIdAndUpdate(
+    _id,
+    { email },
+    { returnDocument: "after" }
+  );
+  res.json(updatedUser?.email);
+};
 const updateIsShown = async (req, res) => {
   const { isShown, _id } = req.user;
   const updatedUser = await User.findByIdAndUpdate(
@@ -146,6 +158,7 @@ export default {
   login: ctrlWrapper(login),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
+  updateEmail: ctrlWrapper(updateEmail),
   updateName: ctrlWrapper(updateName),
   updateAvatar: ctrlWrapper(updateAvatar),
   updateIsShown: ctrlWrapper(updateIsShown),

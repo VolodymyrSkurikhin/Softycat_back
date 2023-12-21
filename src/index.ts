@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import "dotenv/config";
-import { app } from "./app.js";
+// import { app } from "./app.js";
+import { server } from "./app.js";
 
 let db_host: string;
 let port: string;
@@ -21,7 +22,7 @@ mongoose
   .connect(db_host)
   .then(() => {
     console.log("cat_society success connection");
-    app.listen(port, () => {
+    server.listen(port, () => {
       console.log("server started");
     });
   })

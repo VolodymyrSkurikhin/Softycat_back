@@ -1,12 +1,20 @@
 import express from "express";
 import cors from "cors";
 import logger from "morgan";
+import { Server } from "socket.io";
+import { createServer } from "http";
 
 import { router as catRouter } from "./routes/api/cats.js";
 import { router as authRouter } from "./routes/api/auth.js";
 import { router as catImageRouter } from "./routes/api/image.js";
 
 export const app = express();
+export const server = createServer(app);
+export const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
 
 app.use(logger("dev"));
 app.use(cors());
