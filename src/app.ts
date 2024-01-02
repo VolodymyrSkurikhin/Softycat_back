@@ -33,3 +33,9 @@ app.use((err, _req, res, _next) => {
   const { status = 500, message = "Server error" } = err;
   res.status(status).json({ message });
 });
+
+io.on("connection", (socket) => {
+  socket.on("chat-message", (content) => {
+    socket.broadcast.emit("chat-message", content);
+  });
+});
