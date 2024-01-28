@@ -8,7 +8,7 @@ export const trimStr = (str: string) => str.trim().toLowerCase();
 
 const users: IChatUser[] = [];
 
-const findUser = (user: string) => {
+export const findUser = (user: string) => {
   const userName = trimStr(user);
   // const userRoom = trimStr(user.room);
 
