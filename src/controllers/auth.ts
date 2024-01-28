@@ -37,10 +37,16 @@ if (process.env.SECRET_KEY) {
 }
 
 const register = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (user) {
+  const { name, email, password } = req.body;
+  const normEmail = email.trim().toLowercase();
+  const normName = name.trim().toLowercase();
+  const userByEmail = await User.findOne({ normEmail });
+  if (userByEmail) {
     throw HttpError(409, "Email is already in use");
+  }
+  const userByName = await User.findOne({ normName });
+  if (userByName) {
+    throw HttpError(409, "Name is already in use");
   }
   const hashedPassword = await bcryptjs.hash(password, 10);
   const avatarURL = gravatar.url(email);
