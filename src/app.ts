@@ -52,26 +52,31 @@ app.use((err, _req, res, _next) => {
 
 io.on("connection", async (socket) => {
   let message: string;
-  socket.on("joinCommon", async (name, token) => {
+  socket.on("join", async (name, token) => {
+    if (!name && !token) {
+      return;
+    }
     try {
       const { id } = jwt.verify(token, secret_key) as JwtPayload;
       const user = await User.findById(id);
       if (!user || !user.token || user.token !== token) {
-        message = "401";
-        socket.emit("joinCommon", message);
+        message = "Register or login to join chat!";
+        socket.emit("join", message);
         return;
       }
       const isPresent = findUser(name);
       if (isPresent) {
         message = "You are already in chat!";
-        socket.emit("joinCommon", message);
+        socket.emit("join", message);
+        return;
       }
       message = "You are in chat!";
+      socket.emit("join", message);
       // const newUserId = await computeUserIdFromHeaders(socket);
-      addUser(name, nanoid(), "");
+      addUser(name, nanoid(), "", socket);
     } catch {
-      message = "Something went wrong, try later, please!";
-      socket.emit("joinCommon", message);
+      message = "Something went wrong, try to join chat later, please!";
+      socket.emit("join", message);
     }
   });
   socket.on("chat-message", (content) => {
