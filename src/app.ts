@@ -50,7 +50,32 @@ app.use((err, _req, res, _next) => {
   res.status(status).json({ message });
 });
 
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error("invalid token"));
+  }
+  try {
+    const { id } = jwt.verify(token, secret_key) as JwtPayload;
+    User.findById(id).then(
+      (user) => {
+        if (!user || !user.token || user.token !== token) {
+          return next(new Error("invalid token"));
+        }
+        (socket as any).user = user;
+        next();
+      },
+      () => {
+        return next(new Error("invalid token"));
+      }
+    );
+  } catch {
+    return next(new Error("invalid token"));
+  }
+});
+
 io.on("connection", async (socket) => {
+  console.log("socket User", (socket as any).user);
   let message: string;
   socket.on("join", async (name, token) => {
     if (!name && !token) {
