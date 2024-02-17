@@ -130,6 +130,13 @@ io.on("connection", async (socket) => {
     const newRoom = nanoid();
     socket.join(`${newRoom}`);
     newPeer.join(`${newRoom}`);
+    socket
+      .to(`${newRoom}`)
+      .emit("private-message", { author: sender, id: nanoid(), message });
+    socket.on("private-message", (content) => {
+      socket.to(`${newRoom}`).emit("private-message", content);
+    });
+
     // try {
     //   const { id } = jwt.verify(token, secret_key) as JwtPayload;
     //   const user = await User.findById(id);
