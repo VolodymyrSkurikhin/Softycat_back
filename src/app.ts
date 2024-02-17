@@ -4,14 +4,16 @@ import logger from "morgan";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import jwt from "jsonwebtoken";
+import { nanoid } from "nanoid";
 
 import { router as catRouter } from "./routes/api/cats.js";
 import { router as authRouter } from "./routes/api/auth.js";
 import { router as catImageRouter } from "./routes/api/image.js";
 
 import { User } from "./models/user.js";
-import { findUser, addUser } from "./chat/usersFns.js";
-import { nanoid } from "nanoid";
+import { addUserSocket, findPeer, findUserSocket } from "./chat/usersFns.js";
+// import { findUser, addUser } from "./chat/usersFns.js";
+// import { nanoid } from "nanoid";
 
 interface JwtPayload {
   id: string;
@@ -70,41 +72,79 @@ io.use((socket, next) => {
       }
     );
   } catch {
-    return next(new Error("invalid token"));
+    return next(new Error("Could not enter chat.Please,try later"));
   }
 });
 
 io.on("connection", async (socket) => {
   console.log("socket User", (socket as any).user);
-  let message: string;
-  socket.on("join", async (name, token) => {
-    if (!name && !token) {
-      return;
-    }
-    try {
-      const { id } = jwt.verify(token, secret_key) as JwtPayload;
-      const user = await User.findById(id);
-      if (!user || !user.token || user.token !== token) {
-        message = "Register or login to join chat!";
-        socket.emit("join", message);
-        return;
-      }
-      const isPresent = findUser(name);
-      if (isPresent) {
-        message = "You are already in chat!";
-        socket.emit("join", message);
-        return;
-      }
-      message = "You are in chat!";
-      socket.emit("join", message);
-      // const newUserId = await computeUserIdFromHeaders(socket);
-      addUser(name, nanoid(), "", socket);
-    } catch {
-      message = "Something went wrong, try to join chat later, please!";
-      socket.emit("join", message);
-    }
-  });
+  const isPresent = findUserSocket(socket);
+  if (!isPresent) {
+    addUserSocket(socket);
+  }
+
+  // let message: string;
+  // socket.on("join", async (name, token) => {
+  //   if (!name && !token) {
+  //     return;
+  //   }
+  //   try {
+  //     const { id } = jwt.verify(token, secret_key) as JwtPayload;
+  //     const user = await User.findById(id);
+  //     if (!user || !user.token || user.token !== token) {
+  //       message = "Register or login to join chat!";
+  //       socket.emit("join", message);
+  //       return;
+  //     }
+  //     const isPresent = findUser(name);
+  //     if (isPresent) {
+  //       message = "You are already in chat!";
+  //       socket.emit("join", message);
+  //       return;
+  //     }
+  //     message = "You are in chat!";
+  //     socket.emit("join", message);
+  //     // const newUserId = await computeUserIdFromHeaders(socket);
+  //     addUser(name, nanoid(), "", socket);
+  //   } catch {
+  //     message = "Something went wrong, try to join chat later, please!";
+  //     socket.emit("join", message);
+  //   }
+  // });
   socket.on("chat-message", (content) => {
     socket.broadcast.emit("chat-message", content);
+  });
+  socket.on("joinPrivate", async (peer, message, sender, token) => {
+    let reply: string;
+    if (!sender && !token && peer && message) {
+      socket.emit("joinPrivate", "Fill in all fields, please!");
+      return;
+    }
+    const newPeer = findPeer(peer);
+    if (!newPeer) {
+      reply =
+        "Your correspondent is not available right now. Please, try later";
+      socket.emit("joinPrivate", reply);
+      return;
+    }
+    const newRoom = nanoid();
+    socket.join(`${newRoom}`);
+    newPeer.join(`${newRoom}`);
+    // try {
+    //   const { id } = jwt.verify(token, secret_key) as JwtPayload;
+    //   const user = await User.findById(id);
+    //   if (!user || !user.token || user.token !== token) {
+    //     reply = "Register or login to join chat!";
+    //     socket.emit("joinPrivate", reply);
+    //     return;
+    //   }
+    // if (!findUserSocket(socket)) {
+    //   addUserSocket(socket);
+    // }
+
+    // } catch {
+    //   reply = "Something went wrong, try to join chat later, please!";
+    //   socket.emit("joinPrivate", reply);
+    // }
   });
 });
