@@ -11,7 +11,7 @@ import { router as authRouter } from "./routes/api/auth.js";
 import { router as catImageRouter } from "./routes/api/image.js";
 
 import { User } from "./models/user.js";
-import { addUserSocket, findPeer, findUserSocket } from "./chat/usersFns.js";
+import { addUserSocket, findSocket } from "./chat/usersFns.js";
 // import { findUser, addUser } from "./chat/usersFns.js";
 // import { nanoid } from "nanoid";
 
@@ -65,6 +65,7 @@ io.use((socket, next) => {
           return next(new Error("invalid token"));
         }
         (socket as any).user = user;
+        // (socket as any).rooms = [];
         next();
       },
       () => {
@@ -78,11 +79,7 @@ io.use((socket, next) => {
 
 io.on("connection", async (socket) => {
   console.log("socket User", (socket as any).user);
-  const isPresent = findUserSocket(socket);
-  if (!isPresent) {
-    addUserSocket(socket);
-  }
-
+  addUserSocket(socket);
   // let message: string;
   // socket.on("join", async (name, token) => {
   //   if (!name && !token) {
@@ -115,27 +112,56 @@ io.on("connection", async (socket) => {
     socket.broadcast.emit("chat-message", content);
   });
   socket.on("joinPrivate", async (peer, message, sender, token) => {
+    console.log(peer);
     let reply: string;
-    if (!sender && !token && peer && message) {
+    if (!sender || !token || !peer || !message) {
       socket.emit("joinPrivate", "Fill in all fields, please!");
       return;
     }
-    const newPeer = findPeer(peer);
-    if (!newPeer) {
-      reply =
-        "Your correspondent is not available right now. Please, try later";
+    try {
+      const { id } = jwt.verify(token, secret_key) as JwtPayload;
+      User.findById(id).then((user) => {
+        if (!user || !user.token || user.token !== token) {
+          reply = "Not authorized";
+          socket.emit("joinPrivate", reply);
+          return;
+        }
+        const newPeer = findSocket(peer);
+        if (!newPeer) {
+          reply =
+            "Your correspondent is not available right now. Please, try later";
+          socket.emit("joinPrivate", reply);
+          return;
+        }
+        const newRoom = nanoid();
+        socket.join(`${newRoom}`);
+        newPeer.join(`${newRoom}`);
+        console.log(socket.rooms);
+        // socket.rooms.push(newRoom);
+        socket
+          .to(`${newRoom}`)
+          .emit("private-message", { author: sender, id: nanoid(), message });
+        socket.on("private-message", (content) => {
+          socket.to(`${newRoom}`).emit("private-message", content);
+        });
+        socket.on("leavePrivateChat", (author, room) => {
+          const leavingSocket = findSocket(author);
+          if (!leavingSocket) {
+            socket.emit("leavePrivateChat", "No socket");
+            return;
+          }
+          leavingSocket.leave(room);
+          io.to("room").emit(
+            "private-message",
+            `${author} has left private chat`
+          );
+        });
+      });
+    } catch {
+      reply = "Could not enter chat.Please,try later";
       socket.emit("joinPrivate", reply);
       return;
     }
-    const newRoom = nanoid();
-    socket.join(`${newRoom}`);
-    newPeer.join(`${newRoom}`);
-    socket
-      .to(`${newRoom}`)
-      .emit("private-message", { author: sender, id: nanoid(), message });
-    socket.on("private-message", (content) => {
-      socket.to(`${newRoom}`).emit("private-message", content);
-    });
 
     // try {
     //   const { id } = jwt.verify(token, secret_key) as JwtPayload;

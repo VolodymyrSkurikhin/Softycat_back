@@ -39,14 +39,18 @@
 //   return currentUser;
 // };
 
-const socketList: any[] = [];
+let socketMap: { [key: string]: any } = {};
 
-export const findUserSocket = (newSocket: any) => {
-  return socketList.find((s) => s.user.name === newSocket.user.name);
-};
-export const findPeer = (peer: string) => {
-  return socketList.find((s) => s.user.name === peer);
+// export const findUserSocket = (newSocket: any) => {
+//   return socketList.find((s) => s.user.name === newSocket.user.name);
+// };
+export const findSocket = (name: string) => {
+  return socketMap[name];
 };
 export const addUserSocket = (newSocket: any): void => {
-  socketList.push(newSocket);
+  socketMap[newSocket.user.name] = newSocket;
+};
+export const removeUserSocket = (author: string): void => {
+  const newSocketMap = socketMap.filter(socketMap.name !== author);
+  socketMap = newSocketMap;
 };
