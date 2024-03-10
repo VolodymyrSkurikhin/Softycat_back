@@ -138,11 +138,19 @@ io.on("connection", async (socket) => {
         newPeer.join(`${newRoom}`);
         console.log(socket.rooms);
         // socket.rooms.push(newRoom);
-        socket
-          .to(`${newRoom}`)
-          .emit("private-message", { author: sender, id: nanoid(), message });
+        socket.to(`${newRoom}`).emit("private-message", {
+          author: sender,
+          id: nanoid(),
+          message,
+        });
+        io.to(`${newRoom}`).emit("sendRoomId", newRoom);
         socket.on("private-message", (content) => {
+          console.log("content is", content);
           socket.to(`${newRoom}`).emit("private-message", content);
+        });
+        newPeer.on("private-message", (content) => {
+          console.log("content is", content);
+          newPeer.to(`${newRoom}`).emit("private-message", content);
         });
         socket.on("leavePrivateChat", (author, room) => {
           const leavingSocket = findSocket(author);
