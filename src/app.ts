@@ -159,10 +159,22 @@ io.on("connection", async (socket) => {
             return;
           }
           leavingSocket.leave(room);
-          io.to("room").emit(
-            "private-message",
-            `${author} has left private chat`
-          );
+          leavingSocket.removeAllListeners("private-message");
+          io.to(`${room}`).emit("private-message", {
+            message: `${author} has left private chat`,
+          });
+        });
+        newPeer.on("leavePrivateChat", (author, room) => {
+          const leavingSocket = findSocket(author);
+          if (!leavingSocket) {
+            newPeer.emit("leavePrivateChat", "No socket");
+            return;
+          }
+          leavingSocket.leave(room);
+          leavingSocket.removeAllListeners("private-message");
+          io.to(`${room}`).emit("private-message", {
+            message: `${author} has left private chat`,
+          });
         });
       });
     } catch {
