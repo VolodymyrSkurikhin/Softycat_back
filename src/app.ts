@@ -80,34 +80,7 @@ io.use((socket, next) => {
 io.on("connection", async (socket) => {
   console.log("socket User", (socket as any).user);
   addUserSocket(socket);
-  // let message: string;
-  // socket.on("join", async (name, token) => {
-  //   if (!name && !token) {
-  //     return;
-  //   }
-  //   try {
-  //     const { id } = jwt.verify(token, secret_key) as JwtPayload;
-  //     const user = await User.findById(id);
-  //     if (!user || !user.token || user.token !== token) {
-  //       message = "Register or login to join chat!";
-  //       socket.emit("join", message);
-  //       return;
-  //     }
-  //     const isPresent = findUser(name);
-  //     if (isPresent) {
-  //       message = "You are already in chat!";
-  //       socket.emit("join", message);
-  //       return;
-  //     }
-  //     message = "You are in chat!";
-  //     socket.emit("join", message);
-  //     // const newUserId = await computeUserIdFromHeaders(socket);
-  //     addUser(name, nanoid(), "", socket);
-  //   } catch {
-  //     message = "Something went wrong, try to join chat later, please!";
-  //     socket.emit("join", message);
-  //   }
-  // });
+
   socket.on("chat-message", (content) => {
     socket.broadcast.emit("chat-message", content);
   });
