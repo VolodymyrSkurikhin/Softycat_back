@@ -9,6 +9,9 @@ import { nanoid } from "nanoid";
 import { router as catRouter } from "./routes/api/cats.js";
 import { router as authRouter } from "./routes/api/auth.js";
 import { router as catImageRouter } from "./routes/api/image.js";
+import { router as chatRouter } from "./routes/api/chat.js";
+
+import chatCtrl from "./controllers/chat.js";
 
 import { User } from "./models/user.js";
 import { addUserSocket, findSocket } from "./chat/usersFns.js";
@@ -42,6 +45,7 @@ app.use(express.urlencoded());
 app.use("/api/auth", authRouter);
 app.use("/api/cats", catRouter);
 app.use("/api/image", catImageRouter);
+app.use("/api/chat", chatRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ message: "Not found" });
@@ -81,8 +85,15 @@ io.on("connection", async (socket) => {
   console.log("socket User", (socket as any).user);
   addUserSocket(socket);
 
-  socket.on("chat-message", (content) => {
+  socket.on("chat-message", async (content) => {
     socket.broadcast.emit("chat-message", content);
+    const result = await chatCtrl.addCommonChatMsgs(content);
+    if (!result) {
+      socket.broadcast.emit(
+        "chat-message",
+        "Last message is not saved in history"
+      );
+    }
   });
   socket.on("joinPrivate", async (peer, message, sender, token) => {
     console.log(peer);

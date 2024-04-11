@@ -21,4 +21,7 @@ const commonChatSchema = new Schema<ICommonChat>(
 
 commonChatSchema.post("save", handleMongooseError);
 
-export const CommonChat = model<ICommonChat>("cat", commonChatSchema);
+export const CommonChat = model<ICommonChat>(
+  "common message",
+  commonChatSchema
+);
