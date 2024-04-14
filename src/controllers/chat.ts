@@ -7,7 +7,14 @@ const getAllCommonMsgs = async (_, res) => {
   // const { ownerId: owner } = req.params;
   // const { page = 1, limit = 10 } = req.query;
   // const skip = (page - 1) * limit;
-  const result = await CommonChat.find().skip((await CommonChat.count()) - 5);
+  const count = await CommonChat.count();
+  let skip: number;
+  if (count < 5) {
+    skip = 0;
+  } else {
+    skip = 5;
+  }
+  const result = await CommonChat.find().skip(skip);
   res.json(result);
 };
 
