@@ -14,7 +14,11 @@ import { router as chatRouter } from "./routes/api/chat.js";
 import chatCtrl from "./controllers/chat.js";
 
 import { User } from "./models/user.js";
-import { addUserSocket, findSocket } from "./chat/usersFns.js";
+import {
+  addUserSocket,
+  findSocket,
+  removeUserSocket,
+} from "./chat/usersFns.js";
 // import { findUser, addUser } from "./chat/usersFns.js";
 // import { nanoid } from "nanoid";
 
@@ -96,6 +100,7 @@ io.on("connection", async (socket) => {
     }
   });
   socket.on("joinPrivate", async (peer, message, sender, token) => {
+    const normSender = sender.toLowerCase().trim();
     console.log(peer);
     let reply: string;
     if (!sender || !token || !peer || !message) {
@@ -109,6 +114,10 @@ io.on("connection", async (socket) => {
           reply = "Not authorized";
           socket.emit("joinPrivate", reply);
           return;
+        }
+        if (user.name.toLocaleLowerCase().trim() !== normSender) {
+          reply = `Cant find user with name ${sender}`;
+          socket.emit("joinPrivate", reply);
         }
         const newPeer = findSocket(peer);
         if (!newPeer) {
@@ -161,9 +170,13 @@ io.on("connection", async (socket) => {
           });
         });
       });
-    } catch {
-      reply = "Could not enter chat.Please,try later";
-      socket.emit("joinPrivate", reply);
+    } catch (error: any) {
+      // reply = "Could not enter chat.Please,try later";
+      socket.emit("joinPrivate", error.message);
+      const socketToRemove = findSocket(normSender);
+      if (socketToRemove) {
+        removeUserSocket(normSender);
+      }
       return;
     }
 

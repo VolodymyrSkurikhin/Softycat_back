@@ -49,8 +49,12 @@ export const findSocket = (name: string) => {
 };
 export const addUserSocket = (newSocket: any): void => {
   socketMap[newSocket.user.name] = newSocket;
+  console.log("socketMap after addUserSocket ", socketMap);
 };
-export const removeUserSocket = (author: string): void => {
-  const newSocketMap = socketMap.filter(socketMap.name !== author);
+export const removeUserSocket = (name: string): void => {
+  const newSocketMap = Object.fromEntries(
+    Object.entries(socketMap).filter(([key]) => key !== name)
+  );
   socketMap = newSocketMap;
+  console.log("socketMap after removeUserSocket ", socketMap);
 };
