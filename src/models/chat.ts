@@ -1,27 +1,26 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 import { handleMongooseError } from "../helpers/handleMongooseError.js";
-import { string } from "joi";
+// import { string } from "joi";
 
 interface ICommonChat {
   author: string;
   id: string;
   message: string;
-  // type: "my" | "yours";
   time: string;
 }
 
-interface IInterlocutors {
-  starter: string;
-  corresp: string;
-}
+// interface IInterlocutors {
+//   starter: string;
+//   corresp: string;
+// }
 
 interface IPrivateChat {
-  both: IInterlocutors;
+  user: Types.ObjectId;
+  starter: string;
+  corresp: string;
   author: string;
-  // corresp: string;
   id: string;
   message: string;
-  // type: "my" | "yours";
   time: string;
 }
 
@@ -37,10 +36,9 @@ const commonChatSchema = new Schema<ICommonChat>(
 
 const privateChatSchema = new Schema<IPrivateChat>(
   {
-    both: {
-      starter: { type: string, required: true },
-      corresp: { type: string, required: true },
-    },
+    user: { type: Schema.Types.ObjectId, ref: "user", required: true },
+    starter: { type: String, required: true },
+    corresp: { type: String, required: true },
     author: { type: String, required: true },
     // corresp: { type: String, required: true },
     id: { type: String, required: true },
