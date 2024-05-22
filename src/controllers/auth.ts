@@ -38,8 +38,8 @@ if (process.env.SECRET_KEY) {
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
-  const normEmail = email.trim().toLowercase();
-  const normName = name.trim().toLowercase();
+  const normEmail = email.trim().toLowerCase();
+  const normName = name.trim().toLowerCase();
   const userByEmail = await User.findOne({ normEmail });
   if (userByEmail) {
     throw HttpError(409, "Email is already in use");
