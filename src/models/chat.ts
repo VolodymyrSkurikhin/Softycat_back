@@ -15,11 +15,10 @@ interface ICommonChat {
 // }
 
 interface IPrivateChat {
-  user: Types.ObjectId;
+  id: string;
   starter: string;
   corresp: string;
   author: string;
-  id: string;
   message: string;
   time: string;
 }
@@ -36,12 +35,10 @@ const commonChatSchema = new Schema<ICommonChat>(
 
 const privateChatSchema = new Schema<IPrivateChat>(
   {
-    user: { type: Schema.Types.ObjectId, ref: "user", required: true },
+    // id: { type: String, required: true },
     starter: { type: String, required: true },
     corresp: { type: String, required: true },
     author: { type: String, required: true },
-    // corresp: { type: String, required: true },
-    id: { type: String, required: true },
     message: { type: String, required: true },
     time: { type: String, required: true },
   },

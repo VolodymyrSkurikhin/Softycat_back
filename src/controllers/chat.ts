@@ -12,7 +12,7 @@ const getAllCommonMsgs = async (_, res) => {
   if (count < 5) {
     skip = 0;
   } else {
-    skip = 5;
+    skip = count - 5;
   }
   const result = await CommonChat.find().skip(skip);
   res.json(result);
@@ -23,15 +23,11 @@ const addCommonChatMsgs = async (content) => {
   return result;
 };
 
-const getAllPrivateMsgs = async (_, res) => {
-  const count = await PrivateChat.count();
-  let skip: number;
-  if (count < 5) {
-    skip = 0;
-  } else {
-    skip = 5;
-  }
-  const result = await PrivateChat.find({}).skip(skip);
+const getAllPrivateMsgs = async (req, res) => {
+  const { name } = req.user;
+  const result = await PrivateChat.find({
+    $or: [{ starter: name }, { corresp: name }],
+  });
   res.json(result);
 };
 

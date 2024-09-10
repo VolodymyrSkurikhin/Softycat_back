@@ -6,3 +6,4 @@ import { authenticate } from "../../middlewares/authenticate.js";
 export const router = express.Router();
 
 router.get("/commonMsgs", authenticate, chatCtrl.getAllCommonMsgs);
+router.get("/privateMsgs", authenticate, chatCtrl.getAllPrivateMsgs);

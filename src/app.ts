@@ -13,7 +13,7 @@ import { router as chatRouter } from "./routes/api/chat.js";
 
 import chatCtrl from "./controllers/chat.js";
 
-import { User } from "./models/user.js";
+import { IUser, User } from "./models/user.js";
 import {
   addUserSocket,
   findSocket,
@@ -73,7 +73,6 @@ io.use((socket, next) => {
           return next(new Error("invalid token"));
         }
         (socket as any).user = user;
-        // (socket as any).rooms = [];
         next();
       },
       () => {
@@ -86,8 +85,13 @@ io.use((socket, next) => {
 });
 
 io.on("connection", async (socket) => {
-  console.log("socket User", (socket as any).user);
-  addUserSocket(socket);
+  const socketUser: IUser = (socket as any).user;
+  console.log("socket User", socketUser);
+
+  addUserSocket(socketUser.name, socket);
+  socket.on("disconnect", () => {
+    removeUserSocket(socketUser.name);
+  });
 
   socket.on("chat-message", async (content) => {
     socket.broadcast.emit("chat-message", content);
@@ -99,102 +103,61 @@ io.on("connection", async (socket) => {
       );
     }
   });
-  socket.on("joinPrivate", async (peer, message, sender, token) => {
-    const normSender = sender.toLowerCase().trim();
+  socket.on("joinPrivate", async (peer, message) => {
     console.log(peer);
-    let reply: string;
-    if (!sender || !token || !peer || !message) {
+    if (!peer || !message) {
       socket.emit("joinPrivate", "Fill in all fields, please!");
       return;
     }
-    try {
-      const { id } = jwt.verify(token, secret_key) as JwtPayload;
-      User.findById(id).then((user) => {
-        if (!user || !user.token || user.token !== token) {
-          reply = "Not authorized";
-          socket.emit("joinPrivate", reply);
-          return;
-        }
-        if (user.name.toLocaleLowerCase().trim() !== normSender) {
-          reply = `Cant find user with name ${sender}`;
-          socket.emit("joinPrivate", reply);
-        }
-        const newPeer = findSocket(peer);
-        if (!newPeer) {
-          reply =
-            "Your correspondent is not available right now. Please, try later";
-          socket.emit("joinPrivate", reply);
-          return;
-        }
-        const newRoom = nanoid();
-        socket.join(`${newRoom}`);
-        newPeer.join(`${newRoom}`);
-        console.log(socket.rooms);
-        // socket.rooms.push(newRoom);
-        socket.to(`${newRoom}`).emit("private-message", {
-          author: sender,
-          id: nanoid(),
-          message,
-        });
-        io.to(`${newRoom}`).emit("sendRoomId", newRoom);
-        socket.on("private-message", (content) => {
-          console.log("content is", content);
-          socket.to(`${newRoom}`).emit("private-message", content);
-        });
-        newPeer.on("private-message", (content) => {
-          console.log("content is", content);
-          newPeer.to(`${newRoom}`).emit("private-message", content);
-        });
-        socket.on("leavePrivateChat", (author, room) => {
-          const leavingSocket = findSocket(author);
-          if (!leavingSocket) {
-            socket.emit("leavePrivateChat", "No socket");
-            return;
-          }
-          leavingSocket.leave(room);
-          leavingSocket.removeAllListeners("private-message");
-          io.to(`${room}`).emit("private-message", {
-            message: `${author} has left private chat`,
-          });
-        });
-        newPeer.on("leavePrivateChat", (author, room) => {
-          const leavingSocket = findSocket(author);
-          if (!leavingSocket) {
-            newPeer.emit("leavePrivateChat", "No socket");
-            return;
-          }
-          leavingSocket.leave(room);
-          leavingSocket.removeAllListeners("private-message");
-          io.to(`${room}`).emit("private-message", {
-            message: `${author} has left private chat`,
-          });
-        });
-      });
-    } catch (error: any) {
-      // reply = "Could not enter chat.Please,try later";
-      socket.emit("joinPrivate", error.message);
-      const socketToRemove = findSocket(normSender);
-      if (socketToRemove) {
-        removeUserSocket(normSender);
-      }
+    const sender = socketUser.name;
+    const newPeer = findSocket(peer);
+    if (!newPeer) {
+      socket.emit(
+        "joinPrivate",
+        "Your correspondent is not available right now. Please, try later"
+      );
       return;
     }
+    const newRoom = nanoid();
+    socket.join(`${newRoom}`);
+    newPeer.join(`${newRoom}`);
+    socket.to(`${newRoom}`).emit("private-message", {
+      id: nanoid(),
+      author: sender,
+      message,
+    });
+    await chatCtrl.addPrivateChatMsgs({
+      starter: sender,
+      corresp: peer,
+      author: sender,
+      message: message,
+      time: new Date().toLocaleString(),
+    });
+    io.to(`${newRoom}`).emit("sendRoomId", newRoom);
 
-    // try {
-    //   const { id } = jwt.verify(token, secret_key) as JwtPayload;
-    //   const user = await User.findById(id);
-    //   if (!user || !user.token || user.token !== token) {
-    //     reply = "Register or login to join chat!";
-    //     socket.emit("joinPrivate", reply);
-    //     return;
-    //   }
-    // if (!findUserSocket(socket)) {
-    //   addUserSocket(socket);
-    // }
+    const onPrivateMessage = (authorSocket) => async (content) => {
+      console.log("content is", content);
+      authorSocket.to(`${newRoom}`).emit("private-message", content);
+      await chatCtrl.addPrivateChatMsgs({
+        starter: sender,
+        corresp: peer,
+        author: content.author,
+        message: content.message,
+        time: new Date().toLocaleString(),
+      });
+    };
+    socket.on("private-message", onPrivateMessage(socket));
+    newPeer.on("private-message", onPrivateMessage(newPeer));
 
-    // } catch {
-    //   reply = "Something went wrong, try to join chat later, please!";
-    //   socket.emit("joinPrivate", reply);
-    // }
+    const onLeavePrivateChat = (authorSocket) => async (author, room) => {
+      authorSocket.leave(room);
+      authorSocket.removeAllListeners("private-message");
+      io.to(`${room}`).emit("private-message", {
+        message: `${author} has left private chat`,
+      });
+    };
+
+    socket.on("leavePrivateChat", onLeavePrivateChat(socket));
+    newPeer.on("leavePrivateChat", onLeavePrivateChat(newPeer));
   });
 });

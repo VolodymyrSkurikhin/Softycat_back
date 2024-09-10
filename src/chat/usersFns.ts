@@ -1,6 +1,8 @@
 // import { Socket } from "socket.io";
 // import { io } from "../app.js";
 
+// import { Socket } from "socket.io";
+
 // interface IChatUser {
 //   name: string;
 //   userID: string;
@@ -47,8 +49,8 @@ let socketMap: { [key: string]: any } = {};
 export const findSocket = (name: string) => {
   return socketMap[name];
 };
-export const addUserSocket = (newSocket: any): void => {
-  socketMap[newSocket.user.name] = newSocket;
+export const addUserSocket = (name: string, newSocket: any): void => {
+  socketMap[name] = newSocket;
   console.log("socketMap after addUserSocket ", socketMap);
 };
 export const removeUserSocket = (name: string): void => {

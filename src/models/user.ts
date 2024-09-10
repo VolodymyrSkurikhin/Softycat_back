@@ -5,7 +5,7 @@ import { handleMongooseError } from "../helpers/handleMongooseError.js";
 
 const emailRegexp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
-interface IUser {
+export interface IUser {
   // _id: string;
   name: string;
   email: string;
